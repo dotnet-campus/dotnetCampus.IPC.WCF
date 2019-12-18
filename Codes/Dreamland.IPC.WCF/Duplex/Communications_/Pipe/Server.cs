@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.ServiceModel;
 using System.Threading.Tasks;
 using Dreamland.IPC.WCF.Message;
@@ -51,6 +53,11 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         {
             _service.Open();
         }
+
+        /// <summary>
+        /// 获取连接到此服务的客户端Id
+        /// </summary>
+        public List<string> GetClientIdList => _callbackContracts.Keys.ToList();
 
 
         #region 调用客户端方法
