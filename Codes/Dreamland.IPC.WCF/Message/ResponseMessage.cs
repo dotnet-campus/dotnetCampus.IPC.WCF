@@ -72,7 +72,7 @@ namespace Dreamland.IPC.WCF.Message
         };
 
         /// <summary>
-        /// 成功的响应消息
+        /// 异常消息
         /// </summary>
         /// <param name="message"></param>
         /// <param name="ex"></param>
@@ -81,7 +81,7 @@ namespace Dreamland.IPC.WCF.Message
         {
             Result = new ResponseResult()
             {
-                Success = true,
+                Success = false,
                 ErrorCode = (int)ErrorCodes.Exception,
                 Message = ex.Message
             }
