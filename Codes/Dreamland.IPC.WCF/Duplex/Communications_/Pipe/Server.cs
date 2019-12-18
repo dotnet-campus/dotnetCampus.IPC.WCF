@@ -56,9 +56,9 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         #region 调用客户端方法
 
         /// <summary>
-        /// 向客户端发送请求
+        /// 向客户端发送请求，必须在<see cref="RequestMessage"/>的"Destination"属性中指定要发送的客户端目标
         /// </summary>
-        /// <param name="message"></param>
+        /// <param name="message">消息请求</param>
         /// <returns></returns>
         public ResponseMessage Request(RequestMessage message)
         {
@@ -71,7 +71,7 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         }
 
         /// <summary>
-        /// 向客户端发送请求
+        /// 向客户端发送请求，必须在<see cref="RequestMessage"/>的"Destination"属性中指定要发送的客户端目标
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
@@ -86,7 +86,7 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         }
 
         /// <summary>
-        /// 向客户端发送通知
+        /// 向客户端发送通知，必须在<see cref="RequestMessage"/>的"Destination"属性中指定要发送的客户端目标，否则发送广播
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
@@ -96,6 +96,13 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
             if (_callbackContracts.TryGetValue(message.Destination, out var callbackContract))
             {
                 callbackContract.CallbackNotify(message);
+            }
+            else
+            {
+                foreach (var duplexCallbackContract in _callbackContracts)
+                {
+                    duplexCallbackContract.Value.CallbackNotify(message);
+                }
             }
         }
 
