@@ -22,8 +22,18 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         /// 构造
         /// </summary>
         /// <param name="address"></param>
-        public Server(Uri address)
+        public Server(Uri address) : this(address, Guid.NewGuid().ToString())
         {
+        }
+
+        /// <summary>
+        /// 构造
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="serverId"></param>
+        public Server(Uri address, string serverId)
+        {
+            ServerId = serverId;
             _service = new ServiceHost(typeof(DuplexServerContract), address);
             _service.AddServiceEndpoint(typeof(IDuplexContract), new NetNamedPipeBinding(), address);
 
@@ -33,12 +43,10 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
             DuplexServicePool.AddOrUpdateServiceHost(_service, ServerMessageHandler);
         }
 
-        private ResponseMessage ClientInitialize(RequestMessage message)
-        {
-            var channel = OperationContext.Current.GetCallbackChannel<IDuplexCallbackContract>();
-            _callbackContracts.AddOrUpdate(message.Data.ToString(), channel, (s, contract) => channel);
-            return ResponseMessage.SuccessfulResponseMessage(message);
-        }
+        /// <summary>
+        /// 服务端Id
+        /// </summary>
+        public string ServerId { get; }
 
         /// <summary>
         /// 消息处理器服务
@@ -47,18 +55,17 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         public IMessageHandler ServerMessageHandler { get; } = new MessageHandler();
 
         /// <summary>
+        /// 获取连接到此服务的客户端Id
+        /// </summary>
+        public List<string> ClientIdList => _callbackContracts.Keys.ToList();
+
+        /// <summary>
         /// 开启服务
         /// </summary>
         public void Open()
         {
             _service.Open();
         }
-
-        /// <summary>
-        /// 获取连接到此服务的客户端Id
-        /// </summary>
-        public List<string> ClientIdList => _callbackContracts.Keys.ToList();
-
 
         #region 调用客户端方法
 
@@ -135,6 +142,13 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         }
 
         #endregion
+
+        private ResponseMessage ClientInitialize(RequestMessage message)
+        {
+            var channel = OperationContext.Current.GetCallbackChannel<IDuplexCallbackContract>();
+            _callbackContracts.AddOrUpdate(message.Data.ToString(), channel, (s, contract) => channel);
+            return ResponseMessage.SuccessfulResponseMessage(message);
+        }
 
         /// <summary>
         /// 清理资源
