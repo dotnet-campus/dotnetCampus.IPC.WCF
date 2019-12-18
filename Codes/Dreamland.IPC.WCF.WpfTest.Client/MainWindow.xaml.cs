@@ -11,6 +11,8 @@ namespace Dreamland.IPC.WCF.WpfTest.Client
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly string _clientId = Guid.NewGuid().ToString();
+
         private readonly Duplex.Pipe.Client _client;
 
         private readonly ObservableCollection<RequestMessage> _receivedMessages = new ObservableCollection<RequestMessage>();
@@ -19,8 +21,9 @@ namespace Dreamland.IPC.WCF.WpfTest.Client
         {
             InitializeComponent();
             ReceivedDataGrid.ItemsSource = _receivedMessages;
+            Title = $"客户端:{_clientId}";
 
-            _client = new Duplex.Pipe.Client(new Uri(TestCustomText.Address), TestCustomText.TestClientAppCode);
+            _client = new Duplex.Pipe.Client(new Uri(TestCustomText.Address), _clientId);
 
             _client.ClientMessageHandler.TryAddMessageListener(TestCustomText.SendMessage, ListenServerSentMessageRequest);
 
@@ -43,7 +46,7 @@ namespace Dreamland.IPC.WCF.WpfTest.Client
         {
             SentRequestMessage(new RequestMessage()
             {
-                Source = TestCustomText.TestClientAppCode,
+                Source = _clientId,
                 Sequence = TestCustomText.Sequence,
                 Id = TestCustomText.SendMessage,
                 Data = $"【{DateTime.Now.ToLongTimeString()}】" + ClientSendMessageText.Text,

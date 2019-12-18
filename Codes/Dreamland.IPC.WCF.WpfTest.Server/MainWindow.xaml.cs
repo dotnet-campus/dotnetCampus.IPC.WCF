@@ -49,7 +49,7 @@ namespace Dreamland.IPC.WCF.WpfTest.Server
             {
                 Sequence = TestCustomText.Sequence,
                 Id = TestCustomText.SendMessage,
-                Destination = TestCustomText.TestClientAppCode,
+                Destination = ClientIdComboBox.Text,
                 Data = $"【{DateTime.Now.ToLongTimeString()}】" + ServerSendMessageText.Text,
             });
         }
@@ -59,6 +59,11 @@ namespace Dreamland.IPC.WCF.WpfTest.Server
             RecordControl.AddOrUpdate(requestMessage);
             var response = _server.Request(requestMessage);
             RecordControl.AddOrUpdate(response);
+        }
+
+        private void ClientIdComboBox_OnDropDownOpened(object sender, EventArgs e)
+        {
+            ClientIdComboBox.ItemsSource = _server.ClientIdList;
         }
     }
 }

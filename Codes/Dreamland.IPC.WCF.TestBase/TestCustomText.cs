@@ -8,8 +8,6 @@
 
         public const string SendMessage = nameof(SendMessage);
 
-        public const string TestClientAppCode = "ff69f761-15c4-4028-89b9-a0a723a4e046";
-
         /// <summary>
         /// 序列号
         /// </summary>
