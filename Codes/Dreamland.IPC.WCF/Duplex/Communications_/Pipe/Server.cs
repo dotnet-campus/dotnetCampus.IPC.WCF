@@ -57,7 +57,7 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         /// <summary>
         /// 获取连接到此服务的客户端Id
         /// </summary>
-        public List<string> GetClientIdList => _callbackContracts.Keys.ToList();
+        public List<string> ClientIdList => _callbackContracts.Keys.ToList();
 
 
         #region 调用客户端方法
