@@ -62,19 +62,12 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         /// <returns></returns>
         public ResponseMessage Request(RequestMessage message)
         {
-            try
+            if (!_callbackContracts.TryGetValue(message.Destination, out var callbackContract))
             {
-                if (!_callbackContracts.TryGetValue(message.Destination, out var callbackContract))
-                {
-                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.FindClientFailed);
-                }
-                
-                return callbackContract.CallbackRequest(message);
+                return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.FindClientFailed);
             }
-            catch (Exception e)
-            {
-                return ResponseMessage.ExceptionResponseMessage(message, e);
-            }
+
+            return callbackContract.CallbackRequest(message);
         }
 
         /// <summary>
@@ -84,19 +77,12 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         /// <returns></returns>
         public async Task<ResponseMessage> RequestAsync(RequestMessage message)
         {
-            try
+            if (!_callbackContracts.TryGetValue(message.Destination, out var callbackContract))
             {
-                if (!_callbackContracts.TryGetValue(message.Destination, out var callbackContract))
-                {
-                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.FindClientFailed);
-                }
+                return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.FindClientFailed);
+            }
 
-                return await callbackContract.CallbackRequestAsync(message).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                return ResponseMessage.ExceptionResponseMessage(message, e);
-            }
+            return await callbackContract.CallbackRequestAsync(message).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -107,16 +93,9 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         [OperationContract(IsOneWay = true)]
         public void Notify(NotifyMessage message)
         {
-            try
+            if (_callbackContracts.TryGetValue(message.Destination, out var callbackContract))
             {
-                if (_callbackContracts.TryGetValue(message.Destination, out var callbackContract))
-                {
-                    callbackContract.CallbackNotify(message);
-                }
-            }
-            catch (Exception)
-            {
-                // ignored
+                callbackContract.CallbackNotify(message);
             }
         }
 

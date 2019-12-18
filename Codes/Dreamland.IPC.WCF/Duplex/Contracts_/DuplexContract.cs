@@ -13,57 +13,98 @@ namespace Dreamland.IPC.WCF.Duplex
     {
         private ServiceHostBase ServiceHost => OperationContext.Current.Host;
 
+        /// <summary>
+        /// 同步请求处理
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public ResponseMessage Request(RequestMessage message)
         {
-            if (string.IsNullOrWhiteSpace(message.Id))
+            try
             {
-                return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.MessageIdNullOrWhiteSpace);
-            }
-
-            if (DuplexServicePool.TryGetMessageHandler(ServiceHost, out var messageHandler))
-            {
-                if (messageHandler.TryGetMessageListener(message.Id,
-                    out Func<RequestMessage, ResponseMessage> requestFunc))
+                if (string.IsNullOrWhiteSpace(message.Id))
                 {
-                    return requestFunc.Invoke(message);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.MessageIdNullOrWhiteSpace);
                 }
 
-                return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetRequestMessageListenerFailed);
-            }
+                //获取服务对应的消息处理器服务
+                if (DuplexServicePool.TryGetMessageHandler(ServiceHost, out var messageHandler))
+                {
+                    //获取对应此消息Id的请求处理
+                    if (messageHandler.TryGetMessageListener(message.Id,
+                        out Func<RequestMessage, ResponseMessage> requestFunc))
+                    {
+                        return requestFunc.Invoke(message);
+                    }
 
-            return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetMessageHandlerFailed);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetRequestMessageListenerFailed);
+                }
+
+                return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetMessageHandlerFailed);
+            }
+            catch (Exception e)
+            {
+                return ResponseMessage.ExceptionResponseMessage(message, e);
+            }
         }
 
+        /// <summary>
+        /// 异步请求处理
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public async Task<ResponseMessage> RequestAsync(RequestMessage message)
         {
-            if (string.IsNullOrWhiteSpace(message.Id))
+            try
             {
-                return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.MessageIdNullOrWhiteSpace);
-            }
-
-            if (DuplexServicePool.TryGetMessageHandler(ServiceHost, out var messageHandler))
-            {
-                if (messageHandler.TryGetMessageListener(message.Id,
-                    out Func<RequestMessage, Task<ResponseMessage>> requestAsyncFunc))
+                if (string.IsNullOrWhiteSpace(message.Id))
                 {
-                    return await requestAsyncFunc.Invoke(message);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.MessageIdNullOrWhiteSpace);
                 }
 
-                return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetRequestMessageListenerFailed);
-            }
+                //获取服务对应的消息处理器服务
+                if (DuplexServicePool.TryGetMessageHandler(ServiceHost, out var messageHandler))
+                {
+                    //获取对应此消息Id的请求处理
+                    if (messageHandler.TryGetMessageListener(message.Id,
+                        out Func<RequestMessage, Task<ResponseMessage>> requestAsyncFunc))
+                    {
+                        return await requestAsyncFunc.Invoke(message);
+                    }
 
-            return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetMessageHandlerFailed);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetRequestMessageListenerFailed);
+                }
+
+                return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetMessageHandlerFailed);
+            }
+            catch (Exception e)
+            {
+                return ResponseMessage.ExceptionResponseMessage(message, e);
+            }
         }
 
+        /// <summary>
+        /// 通知处理
+        /// </summary>
+        /// <param name="message"></param>
         public void Notify(NotifyMessage message)
         {
-            if (DuplexServicePool.TryGetMessageHandler(ServiceHost, out var messageHandler))
+            try
             {
-                if (messageHandler.TryGetMessageListener(message.Id,
-                    out Action<NotifyMessage> notifyAction))
+                //获取服务对应的消息处理器服务
+                if (DuplexServicePool.TryGetMessageHandler(ServiceHost, out var messageHandler))
                 {
-                    notifyAction.Invoke(message);
+                    //获取对应此消息Id的通知处理
+                    if (messageHandler.TryGetMessageListener(message.Id,
+                        out Action<NotifyMessage> notifyAction))
+                    {
+                        notifyAction.Invoke(message);
+                    }
                 }
+            }
+            catch (Exception)
+            {
+                // 忽略
             }
         }
     }
@@ -104,23 +145,32 @@ namespace Dreamland.IPC.WCF.Duplex
         /// <returns></returns>
         public ResponseMessage CallbackRequest(RequestMessage message)
         {
-            if (string.IsNullOrWhiteSpace(message.Id))
+            try
             {
-                return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.MessageIdNullOrWhiteSpace);
-            }
-
-            if (DuplexServicePool.TryGetMessageHandler(this, out var messageHandler))
-            {
-                if (messageHandler.TryGetMessageListener(message.Id,
-                    out Func<RequestMessage, ResponseMessage> requestFunc))
+                if (string.IsNullOrWhiteSpace(message.Id))
                 {
-                    return requestFunc.Invoke(message);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.MessageIdNullOrWhiteSpace);
                 }
 
-                return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetRequestMessageListenerFailed);
-            }
+                //获取服务对应的消息处理器服务
+                if (DuplexServicePool.TryGetMessageHandler(this, out var messageHandler))
+                {
+                    //获取对应此消息Id的请求处理
+                    if (messageHandler.TryGetMessageListener(message.Id,
+                        out Func<RequestMessage, ResponseMessage> requestFunc))
+                    {
+                        return requestFunc.Invoke(message);
+                    }
 
-            return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetMessageHandlerFailed);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetRequestMessageListenerFailed);
+                }
+
+                return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetMessageHandlerFailed);
+            }
+            catch (Exception e)
+            {
+                return ResponseMessage.ExceptionResponseMessage(message, e);
+            }
         }
 
         /// <summary>
@@ -130,23 +180,32 @@ namespace Dreamland.IPC.WCF.Duplex
         /// <returns></returns>
         public async Task<ResponseMessage> CallbackRequestAsync(RequestMessage message)
         {
-            if (string.IsNullOrWhiteSpace(message.Id))
+            try
             {
-                return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.MessageIdNullOrWhiteSpace);
-            }
-
-            if (DuplexServicePool.TryGetMessageHandler(this, out var messageHandler))
-            {
-                if (messageHandler.TryGetMessageListener(message.Id,
-                    out Func<RequestMessage, Task<ResponseMessage>> requestAsyncFunc))
+                if (string.IsNullOrWhiteSpace(message.Id))
                 {
-                    return await requestAsyncFunc.Invoke(message);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.MessageIdNullOrWhiteSpace);
                 }
 
-                return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetRequestMessageListenerFailed);
-            }
+                //获取服务对应的消息处理器服务
+                if (DuplexServicePool.TryGetMessageHandler(this, out var messageHandler))
+                {
+                    //获取对应此消息Id的请求处理
+                    if (messageHandler.TryGetMessageListener(message.Id,
+                        out Func<RequestMessage, Task<ResponseMessage>> requestAsyncFunc))
+                    {
+                        return await requestAsyncFunc.Invoke(message);
+                    }
 
-            return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetMessageHandlerFailed);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetRequestMessageListenerFailed);
+                }
+
+                return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetMessageHandlerFailed);
+            }
+            catch (Exception e)
+            {
+                return ResponseMessage.ExceptionResponseMessage(message, e);
+            }
         }
 
         /// <summary>
@@ -156,13 +215,22 @@ namespace Dreamland.IPC.WCF.Duplex
         /// <returns></returns>
         public void CallbackNotify(NotifyMessage message)
         {
-            if (DuplexServicePool.TryGetMessageHandler(this, out var messageHandler))
+            try
             {
-                if (messageHandler.TryGetMessageListener(message.Id,
-                    out Action<NotifyMessage> notifyAction))
+                //获取服务对应的消息处理器服务
+                if (DuplexServicePool.TryGetMessageHandler(this, out var messageHandler))
                 {
-                    notifyAction.Invoke(message);
+                    //获取对应此消息Id的通知处理
+                    if (messageHandler.TryGetMessageListener(message.Id,
+                        out Action<NotifyMessage> notifyAction))
+                    {
+                        notifyAction.Invoke(message);
+                    }
                 }
+            }
+            catch (Exception)
+            {
+                // ignored
             }
         }
     }
