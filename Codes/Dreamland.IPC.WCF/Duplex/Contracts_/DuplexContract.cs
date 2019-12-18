@@ -122,17 +122,38 @@ namespace Dreamland.IPC.WCF.Duplex
 
         public ResponseMessage Request(RequestMessage message)
         {
-            return Channel.Request(message);
+            try
+            {
+                return Channel.Request(message);
+            }
+            catch (Exception e)
+            {
+                return ResponseMessage.ExceptionResponseMessage(message, e);
+            }
         }
 
         public async Task<ResponseMessage> RequestAsync(RequestMessage message)
         {
-            return await Channel.RequestAsync(message);
+            try
+            {
+                return await Channel.RequestAsync(message);
+            }
+            catch (Exception e)
+            {
+                return ResponseMessage.ExceptionResponseMessage(message, e);
+            }
         }
 
         public void Notify(NotifyMessage message)
         {
-            Channel.Notify(message);
+            try
+            {
+                Channel.Notify(message);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
     }
 
