@@ -41,8 +41,6 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
             ServerMessageHandler.TryAddMessageListener("@@Inner_Binding_Server_From_Modification", ClientBindingServer);
             //在服务池中：注册此服务对应的消息处理
             DuplexServicePool.AddOrUpdateServiceHost(_service, ServerMessageHandler);
-            //启动服务
-            _service.Open();
         }
 
         /// <summary>
@@ -57,9 +55,29 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         public IMessageHandler ServerMessageHandler { get; } = new MessageHandler();
 
         /// <summary>
+        /// 当前的服务端连接状态
+        /// </summary>
+        public CommunicationState State => _service.State;
+
+        /// <summary>
         /// 获取连接到此服务的客户端Id
         /// </summary>
         public List<string> ClientIdList => _callbackContracts.Keys.ToList();
+
+        /// <summary>
+        /// 初始化通信
+        /// </summary>
+        /// <param name="timeout">指定在超时前必须完成打开操作的时间（毫秒）</param>
+        public void Initialize(double timeout = 10000)
+        {
+            if (State != CommunicationState.Created)
+            {
+                return;
+            }
+
+            //启动服务
+            _service.Open(TimeSpan.FromMilliseconds(timeout));
+        }
 
         #region 调用客户端方法
 

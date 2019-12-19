@@ -22,6 +22,7 @@ namespace Dreamland.IPC.WCF.WpfTest.Server
 
             _server = new Duplex.Pipe.Server(new Uri(TestCustomText.Address));
             _server.ServerMessageHandler.TryAddMessageListener(TestCustomText.SendMessage, ListenClientSentMessageRequest);
+            _server.Initialize();
         }
 
         /// <summary>

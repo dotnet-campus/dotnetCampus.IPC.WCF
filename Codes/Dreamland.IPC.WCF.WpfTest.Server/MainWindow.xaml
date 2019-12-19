@@ -1,7 +1,6 @@
 ﻿<Window x:Class="Dreamland.IPC.WCF.WpfTest.Server.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:Dreamland.IPC.WCF.WpfTest.Client.Server"
         xmlns:message="clr-namespace:Dreamland.IPC.WCF.Message;assembly=Dreamland.IPC.WCF"
         xmlns:controls="clr-namespace:Dreamland.IPC.WCF.TestBase.Controls;assembly=Dreamland.IPC.WCF.TestBase"
         Title="服务端" Width="1000" SizeToContent="Height">

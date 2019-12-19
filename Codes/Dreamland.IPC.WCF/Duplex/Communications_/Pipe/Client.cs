@@ -46,6 +46,11 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         #region 连接服务
 
         /// <summary>
+        /// 当前的连接状态
+        /// </summary>
+        public CommunicationState State => _clientContract.State;
+
+        /// <summary>
         /// 是否已经绑定至Server
         /// </summary>
         public bool HasBindingServer { get; private set; }
