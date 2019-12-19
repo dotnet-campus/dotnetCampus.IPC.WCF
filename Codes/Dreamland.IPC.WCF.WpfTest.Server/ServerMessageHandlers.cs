@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Dreamland.IPC.WCF.Message;
+using Dreamland.IPC.WCF.TestBase;
 
 namespace Dreamland.IPC.WCF.WpfTest.Server
 {
@@ -18,8 +19,8 @@ namespace Dreamland.IPC.WCF.WpfTest.Server
         /// </summary>
         /// <param name="requestMessage"></param>
         /// <returns></returns>
-        [MessageHandler("SendMessage", MessageHandlerType.Request)]
-        public ResponseMessage SendMessageAsync(RequestMessage requestMessage)
+        [MessageHandler(TestCustomText.SendToServerMessageAsync, MessageHandlerType.RequestAsync)]
+        public async Task<ResponseMessage> SendMessageAsync(RequestMessage requestMessage)
         {
             _requestMessages.Add(requestMessage);
             return new ResponseMessage(requestMessage)

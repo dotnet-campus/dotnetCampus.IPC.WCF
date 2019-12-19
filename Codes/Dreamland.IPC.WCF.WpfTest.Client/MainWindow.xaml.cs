@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows;
 using Dreamland.IPC.WCF.Message;
 using Dreamland.IPC.WCF.TestBase;
@@ -25,7 +26,7 @@ namespace Dreamland.IPC.WCF.WpfTest.Client
 
             _client = new Duplex.Pipe.Client(new Uri(TestCustomText.Address), _clientId);
 
-            _client.ClientMessageHandler.TryAddMessageListener(TestCustomText.SendMessage, ListenServerSentMessageRequest);
+            _client.ClientMessageHandler.TryAddMessageListener(TestCustomText.SendToClientMessage, ListenServerSentMessageRequest);
 
             _client.BindingServer();
         }
@@ -48,15 +49,15 @@ namespace Dreamland.IPC.WCF.WpfTest.Client
             {
                 Source = _clientId,
                 Sequence = TestCustomText.Sequence,
-                Id = TestCustomText.SendMessage,
+                Id = TestCustomText.SendToServerMessageAsync,
                 Data = $"【{DateTime.Now.ToLongTimeString()}】" + ClientSendMessageText.Text,
             });
         }
 
-        private void SentRequestMessage(RequestMessage requestMessage)
+        private async void SentRequestMessage(RequestMessage requestMessage)
         {
             RecordControl.AddOrUpdate(requestMessage);
-            var response = _client.Request(requestMessage);
+            var response = await _client.RequestAsync(requestMessage);
             RecordControl.AddOrUpdate(response);
         }
     }

@@ -33,7 +33,7 @@ namespace Dreamland.IPC.WCF.WpfTest.Server
             SentRequestMessage(new RequestMessage()
             {
                 Sequence = TestCustomText.Sequence,
-                Id = TestCustomText.SendMessage,
+                Id = TestCustomText.SendToClientMessage,
                 Destination = ClientIdComboBox.Text,
                 Data = $"【{DateTime.Now.ToLongTimeString()}】" + ServerSendMessageText.Text,
             });

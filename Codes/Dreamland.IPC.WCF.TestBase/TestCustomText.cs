@@ -6,7 +6,9 @@
 
         public const string Address = "net.pipe://localhost/dreamland_duplexserver";
 
-        public const string SendMessage = nameof(SendMessage);
+        public const string SendToClientMessage = nameof(SendToClientMessage);
+
+        public const string SendToServerMessageAsync = nameof(SendToServerMessageAsync);
 
         /// <summary>
         /// 序列号
