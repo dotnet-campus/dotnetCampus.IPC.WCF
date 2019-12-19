@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Windows;
+using Dreamland.IPC.WCF.Extensions;
 using Dreamland.IPC.WCF.Message;
 using Dreamland.IPC.WCF.TestBase;
 
@@ -21,25 +22,10 @@ namespace Dreamland.IPC.WCF.WpfTest.Server
             ReceivedDataGrid.ItemsSource = _receivedMessages;
 
             _server = new Duplex.Pipe.Server(new Uri(TestCustomText.Address));
-            _server.ServerMessageHandler.TryAddMessageListener(TestCustomText.SendMessage, ListenClientSentMessageRequest);
-            _server.Initialize();
-        }
+            var serverMessageHandlers = new ServerMessageHandlers(_receivedMessages);
+            _server.ServerMessageHandler.RegisterHandlers(serverMessageHandlers);
 
-        /// <summary>
-        /// 监听来自客户端的"SentMessage"请求
-        /// </summary>
-        /// <param name="arg"></param>
-        /// <returns></returns>
-        private ResponseMessage ListenClientSentMessageRequest(RequestMessage arg)
-        {
-            _receivedMessages.Add(arg);
-            return new ResponseMessage(arg)
-            {
-                Result = new ResponseResult()
-                {
-                    Success = true
-                }
-            };
+            _server.Initialize();
         }
 
         private void SendToClientButton_OnClick(object sender, RoutedEventArgs e)
