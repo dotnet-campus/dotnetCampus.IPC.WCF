@@ -9,9 +9,11 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
     /// 客户端
     /// </summary>
     [ServiceContract]
-    public class Client
+    public class Client : IDisposable
     {
-        private readonly DuplexClientContract _clientContract;
+        private DuplexClientContract _clientContract;
+        private readonly EndpointAddress _endpointAddress;
+        private readonly InstanceContext _instanceContext;
 
         /// <summary>
         /// 构造
@@ -22,8 +24,9 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         {
             ClientId = clientId;
             var callbackContract = new DuplexCallbackContract();
-            var content = new InstanceContext(callbackContract);
-            _clientContract = new DuplexClientContract(content, new NetNamedPipeBinding(), new EndpointAddress(address));
+            _instanceContext = new InstanceContext(callbackContract);
+            _endpointAddress = new EndpointAddress(address);
+            _clientContract = new DuplexClientContract(_instanceContext, new NetNamedPipeBinding(), _endpointAddress);
 
             //在服务池中：注册此客户端对应的消息处理
             DuplexServicePool.AddOrUpdateServiceHost(callbackContract, ClientMessageHandler);
@@ -40,35 +43,76 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         /// </summary>
         public IMessageHandler ClientMessageHandler { get; } = new MessageHandler();
 
-        #region 初始化
+        #region 连接服务
 
         /// <summary>
-        /// 是否已经初始化
+        /// 是否已经绑定至Server
         /// </summary>
-        public bool HasInitialized { get; private set; }
+        public bool HasBindingServer { get; private set; }
 
         /// <summary>
-        /// 初始化（注册连接）
+        /// 绑定服务端
+        /// 绑定服务端成功即可与服务端进行双工通信
         /// </summary>
-        public bool Initialize()
+        public ResponseResult BindingServer()
         {
-            if (HasInitialized)
+            if (HasBindingServer)
             {
-                return true;
+                return new ResponseResult()
+                {
+                    Success = true
+                };
             }
 
-            var success = Request(new RequestMessage()
+            var response = Request(new RequestMessage()
             {
-                Id = "Initialize",
+                Id = "@@Inner_Binding_Server_From_Modification",
                 Data = ClientId,
-            }).Result?.Success ?? false;
+            });
 
-            if (success)
+            HasBindingServer = response.Result?.Success ?? false;
+            return response.Result;
+        }
+
+        /// <summary>
+        /// 重连服务
+        /// </summary>
+        /// <returns></returns>
+        public CommunicationState ReconnectServer()
+        {
+            try
             {
-                HasInitialized = true;
+                _clientContract.Abort();
+                _clientContract = new DuplexClientContract(_instanceContext, new NetNamedPipeBinding(), _endpointAddress);
+            }
+            catch (Exception)
+            {
+                return CommunicationState.Faulted;
             }
 
-            return success;
+            return _clientContract.State;
+        }
+
+        /// <summary>
+        /// 尝试修复连接
+        /// </summary>
+        private void TryRepairConnection()
+        {
+            try
+            {
+                switch (_clientContract.State)
+                {
+                    case CommunicationState.Closed:
+                    case CommunicationState.Closing:
+                    case CommunicationState.Faulted:
+                        ReconnectServer();
+                        break;
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
 
         #endregion
@@ -82,6 +126,7 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         /// <returns></returns>
         public ResponseMessage Request(RequestMessage message)
         {
+            TryRepairConnection();
             return _clientContract.Request(message);
         }
 
@@ -92,6 +137,7 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         /// <returns></returns>
         public async Task<ResponseMessage> RequestAsync(RequestMessage message)
         {
+            TryRepairConnection();
             return await _clientContract.RequestAsync(message).ConfigureAwait(false);
         }
 
@@ -103,9 +149,19 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         [OperationContract(IsOneWay = true)]
         public void Notify(NotifyMessage message)
         {
+            TryRepairConnection();
             _clientContract.Notify(message);
         }
 
         #endregion
+
+        /// <summary>
+        /// 注销资源
+        /// </summary>
+        public void Dispose()
+        {
+            _clientContract.Abort();
+            ((IDisposable) _clientContract)?.Dispose();
+        }
     }
 }

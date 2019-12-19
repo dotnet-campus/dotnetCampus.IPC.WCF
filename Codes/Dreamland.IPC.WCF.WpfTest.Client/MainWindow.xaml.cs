@@ -27,7 +27,7 @@ namespace Dreamland.IPC.WCF.WpfTest.Client
 
             _client.ClientMessageHandler.TryAddMessageListener(TestCustomText.SendMessage, ListenServerSentMessageRequest);
 
-            _client.Initialize();
+            _client.BindingServer();
         }
 
         private ResponseMessage ListenServerSentMessageRequest(RequestMessage arg)

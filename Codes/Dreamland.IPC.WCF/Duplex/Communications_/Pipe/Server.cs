@@ -38,9 +38,11 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
             _service.AddServiceEndpoint(typeof(IDuplexContract), new NetNamedPipeBinding(), address);
 
             //监听客户端初始化事件
-            ServerMessageHandler.TryAddMessageListener("Initialize", ClientInitialize);
+            ServerMessageHandler.TryAddMessageListener("@@Inner_Binding_Server_From_Modification", ClientBindingServer);
             //在服务池中：注册此服务对应的消息处理
             DuplexServicePool.AddOrUpdateServiceHost(_service, ServerMessageHandler);
+            //启动服务
+            _service.Open();
         }
 
         /// <summary>
@@ -58,14 +60,6 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         /// 获取连接到此服务的客户端Id
         /// </summary>
         public List<string> ClientIdList => _callbackContracts.Keys.ToList();
-
-        /// <summary>
-        /// 开启服务
-        /// </summary>
-        public void Open()
-        {
-            _service.Open();
-        }
 
         #region 调用客户端方法
 
@@ -143,7 +137,7 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
 
         #endregion
 
-        private ResponseMessage ClientInitialize(RequestMessage message)
+        private ResponseMessage ClientBindingServer(RequestMessage message)
         {
             var channel = OperationContext.Current.GetCallbackChannel<IDuplexCallbackContract>();
             _callbackContracts.AddOrUpdate(message.Data.ToString(), channel, (s, contract) => channel);
@@ -155,6 +149,7 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         /// </summary>
         public void Dispose()
         {
+            _service.Abort();
             ((IDisposable) _service)?.Dispose();
         }
     }
