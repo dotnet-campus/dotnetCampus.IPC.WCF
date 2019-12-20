@@ -15,5 +15,7 @@ jobs:
         dotnet-version: 2.2.108
     - name: restore
       run: dotnet restore
+    - name: Setup MSBuild.exe
+      uses: warrenbuckley/Setup-MSBuild@v1
     - name: msbuild
       run: msbuild
