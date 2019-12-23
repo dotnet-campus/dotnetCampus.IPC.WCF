@@ -76,13 +76,14 @@ namespace Dreamland.IPC.WCF.Message
         /// </summary>
         /// <param name="message"></param>
         /// <param name="ex"></param>
+        /// <param name="isBusinessException"></param>
         /// <returns></returns>
-        public static ResponseMessage ExceptionResponseMessage(RequestMessage message, Exception ex) => new ResponseMessage(message)
+        public static ResponseMessage ExceptionResponseMessage(RequestMessage message, Exception ex, bool isBusinessException = true) => new ResponseMessage(message)
         {
             Result = new ResponseResult()
             {
                 Success = false,
-                ErrorCode = (int)ErrorCodes.Exception,
+                ErrorCode = isBusinessException ? (int)ErrorCodes.BusinessException : (int)ErrorCodes.CommunicationException,
                 Message = ex.Message
             }
         };

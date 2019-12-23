@@ -99,7 +99,7 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
             }
             catch (Exception e)
             {
-                return ResponseMessage.ExceptionResponseMessage(message, e);
+                return ResponseMessage.ExceptionResponseMessage(message, e, false);
             }
         }
 
@@ -121,7 +121,7 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
             }
             catch (Exception e)
             {
-                return ResponseMessage.ExceptionResponseMessage(message, e);
+                return ResponseMessage.ExceptionResponseMessage(message, e, false);
             }
         }
 
