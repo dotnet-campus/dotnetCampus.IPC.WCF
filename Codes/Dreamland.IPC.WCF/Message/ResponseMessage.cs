@@ -14,7 +14,6 @@ namespace Dreamland.IPC.WCF.Message
         /// </summary>
         public ResponseMessage()
         {
-
         }
 
         /// <summary>
@@ -43,16 +42,19 @@ namespace Dreamland.IPC.WCF.Message
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public static ResponseMessage SuccessfulResponseMessage(RequestMessage message) => new ResponseMessage(message)
+        public static ResponseMessage SuccessfulResponseMessage(RequestMessage message)
         {
-            Result = new ResponseResult()
+            return new ResponseMessage(message)
             {
-                Success = true,
-                ErrorCode = (int)ErrorCodes.Success,
-                Message = ErrorCodes.Success.GetCustomAttribute<LogAttribute>()
-                    ?.Description
-            }
-        };
+                Result = new ResponseResult
+                {
+                    Success = true,
+                    ErrorCode = (int) ErrorCodes.Success,
+                    Message = ErrorCodes.Success.GetCustomAttribute<LogAttribute>()
+                        ?.Description
+                }
+            };
+        }
 
         /// <summary>
         /// 通过错误码获取指定异常响应
@@ -60,16 +62,19 @@ namespace Dreamland.IPC.WCF.Message
         /// <param name="message"></param>
         /// <param name="errorCode"></param>
         /// <returns></returns>
-        public static ResponseMessage GetResponseMessageFromErrorCode(RequestMessage message, ErrorCodes errorCode) => new ResponseMessage(message)
+        public static ResponseMessage GetResponseMessageFromErrorCode(RequestMessage message, ErrorCodes errorCode)
         {
-            Result = new ResponseResult()
+            return new ResponseMessage(message)
             {
-                Success = false,
-                ErrorCode = (int)errorCode,
-                Message = errorCode.GetCustomAttribute<LogAttribute>()
-                    ?.Description
-            }
-        };
+                Result = new ResponseResult
+                {
+                    Success = false,
+                    ErrorCode = (int) errorCode,
+                    Message = errorCode.GetCustomAttribute<LogAttribute>()
+                        ?.Description
+                }
+            };
+        }
 
         /// <summary>
         /// 异常消息
@@ -78,15 +83,21 @@ namespace Dreamland.IPC.WCF.Message
         /// <param name="ex"></param>
         /// <param name="isBusinessException"></param>
         /// <returns></returns>
-        public static ResponseMessage ExceptionResponseMessage(RequestMessage message, Exception ex, bool isBusinessException = true) => new ResponseMessage(message)
+        public static ResponseMessage ExceptionResponseMessage(RequestMessage message, Exception ex,
+            bool isBusinessException = true)
         {
-            Result = new ResponseResult()
+            return new ResponseMessage(message)
             {
-                Success = false,
-                ErrorCode = isBusinessException ? (int)ErrorCodes.BusinessException : (int)ErrorCodes.CommunicationException,
-                Message = ex.Message
-            }
-        };
+                Result = new ResponseResult
+                {
+                    Success = false,
+                    ErrorCode = isBusinessException
+                        ? (int) ErrorCodes.BusinessException
+                        : (int) ErrorCodes.CommunicationException,
+                    Message = ex.Message
+                }
+            };
+        }
 
         #endregion
     }

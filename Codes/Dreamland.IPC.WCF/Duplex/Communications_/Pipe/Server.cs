@@ -14,10 +14,6 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
     [ServiceContract]
     public class Server : IDisposable
     {
-        private readonly ServiceHost _service;
-
-        private readonly ConcurrentDictionary<string, IDuplexCallbackContract> _callbackContracts = new ConcurrentDictionary<string, IDuplexCallbackContract>();
-
         /// <summary>
         /// 构造
         /// </summary>
@@ -77,6 +73,27 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
 
             //启动服务
             _service.Open(TimeSpan.FromMilliseconds(timeout));
+        }
+
+        /// <summary>
+        /// 清理资源
+        /// </summary>
+        public void Dispose()
+        {
+            _service.Abort();
+            ((IDisposable) _service)?.Dispose();
+        }
+
+        private readonly ConcurrentDictionary<string, IDuplexCallbackContract> _callbackContracts =
+            new ConcurrentDictionary<string, IDuplexCallbackContract>();
+
+        private readonly ServiceHost _service;
+
+        private ResponseMessage ClientBindingServer(RequestMessage message)
+        {
+            var channel = OperationContext.Current.GetCallbackChannel<IDuplexCallbackContract>();
+            _callbackContracts.AddOrUpdate(message.Data, channel, (s, contract) => channel);
+            return ResponseMessage.SuccessfulResponseMessage(message);
         }
 
         #region 调用客户端方法
@@ -154,21 +171,5 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         }
 
         #endregion
-
-        private ResponseMessage ClientBindingServer(RequestMessage message)
-        {
-            var channel = OperationContext.Current.GetCallbackChannel<IDuplexCallbackContract>();
-            _callbackContracts.AddOrUpdate(message.Data.ToString(), channel, (s, contract) => channel);
-            return ResponseMessage.SuccessfulResponseMessage(message);
-        }
-
-        /// <summary>
-        /// 清理资源
-        /// </summary>
-        public void Dispose()
-        {
-            _service.Abort();
-            ((IDisposable) _service)?.Dispose();
-        }
     }
 }

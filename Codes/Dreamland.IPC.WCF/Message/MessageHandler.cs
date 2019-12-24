@@ -10,21 +10,6 @@ namespace Dreamland.IPC.WCF.Message
     internal class MessageHandler : IMessageHandler
     {
         /// <summary>
-        /// 请求消息监听接口字典
-        /// </summary>
-        private readonly ConcurrentDictionary<string, Func<RequestMessage, ResponseMessage>> _requestFuncDictionary = new ConcurrentDictionary<string, Func<RequestMessage, ResponseMessage>>();
-
-        /// <summary>
-        /// 请求(异步)消息监听接口字典
-        /// </summary>
-        private readonly ConcurrentDictionary<string, Func<RequestMessage, Task<ResponseMessage>>> _requestAsyncFuncDictionary = new ConcurrentDictionary<string, Func<RequestMessage, Task<ResponseMessage>>>();
-
-        /// <summary>
-        /// 通知消息监听接口字典
-        /// </summary>
-        private readonly ConcurrentDictionary<string, Action<NotifyMessage>> _notifyActionDictionary = new ConcurrentDictionary<string, Action<NotifyMessage>>();
-
-        /// <summary>
         /// 增加请求消息监听
         /// </summary>
         /// <param name="messageId"></param>
@@ -49,7 +34,8 @@ namespace Dreamland.IPC.WCF.Message
         /// </summary>
         /// <param name="messageId"></param>
         /// <param name="requestAsyncFunc"></param>
-        public bool TryAddMessageListener(string messageId, Func<RequestMessage, Task<ResponseMessage>> requestAsyncFunc)
+        public bool TryAddMessageListener(string messageId,
+            Func<RequestMessage, Task<ResponseMessage>> requestAsyncFunc)
         {
             return _requestAsyncFuncDictionary.TryAdd(messageId, requestAsyncFunc);
         }
@@ -59,7 +45,8 @@ namespace Dreamland.IPC.WCF.Message
         /// </summary>
         /// <param name="messageId"></param>
         /// <param name="requestAsyncFunc"></param>
-        public bool TryGetMessageListener(string messageId, out Func<RequestMessage, Task<ResponseMessage>> requestAsyncFunc)
+        public bool TryGetMessageListener(string messageId,
+            out Func<RequestMessage, Task<ResponseMessage>> requestAsyncFunc)
         {
             return _requestAsyncFuncDictionary.TryGetValue(messageId, out requestAsyncFunc);
         }
@@ -117,5 +104,24 @@ namespace Dreamland.IPC.WCF.Message
             _requestAsyncFuncDictionary.Clear();
             _notifyActionDictionary.Clear();
         }
+
+        /// <summary>
+        /// 通知消息监听接口字典
+        /// </summary>
+        private readonly ConcurrentDictionary<string, Action<NotifyMessage>> _notifyActionDictionary =
+            new ConcurrentDictionary<string, Action<NotifyMessage>>();
+
+        /// <summary>
+        /// 请求(异步)消息监听接口字典
+        /// </summary>
+        private readonly ConcurrentDictionary<string, Func<RequestMessage, Task<ResponseMessage>>>
+            _requestAsyncFuncDictionary =
+                new ConcurrentDictionary<string, Func<RequestMessage, Task<ResponseMessage>>>();
+
+        /// <summary>
+        /// 请求消息监听接口字典
+        /// </summary>
+        private readonly ConcurrentDictionary<string, Func<RequestMessage, ResponseMessage>> _requestFuncDictionary =
+            new ConcurrentDictionary<string, Func<RequestMessage, ResponseMessage>>();
     }
 }

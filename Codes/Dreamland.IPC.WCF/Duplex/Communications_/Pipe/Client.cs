@@ -11,10 +11,6 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
     [ServiceContract]
     public class Client : IDisposable
     {
-        private DuplexClientContract _clientContract;
-        private readonly EndpointAddress _endpointAddress;
-        private readonly InstanceContext _instanceContext;
-
         /// <summary>
         /// 构造
         /// </summary>
@@ -43,6 +39,19 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         /// </summary>
         public IMessageHandler ClientMessageHandler { get; } = new MessageHandler();
 
+        /// <summary>
+        /// 注销资源
+        /// </summary>
+        public void Dispose()
+        {
+            _clientContract.Abort();
+            ((IDisposable) _clientContract)?.Dispose();
+        }
+
+        private readonly EndpointAddress _endpointAddress;
+        private readonly InstanceContext _instanceContext;
+        private DuplexClientContract _clientContract;
+
         #region 连接服务
 
         /// <summary>
@@ -63,16 +72,16 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         {
             if (HasBindingServer)
             {
-                return new ResponseResult()
+                return new ResponseResult
                 {
                     Success = true
                 };
             }
 
-            var response = Request(new RequestMessage()
+            var response = Request(new RequestMessage
             {
                 Id = "@@Inner_Binding_Server_From_Modification",
-                Data = ClientId,
+                Data = ClientId
             });
 
             HasBindingServer = response.Result?.Success ?? false;
@@ -88,7 +97,8 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
             try
             {
                 _clientContract.Abort();
-                _clientContract = new DuplexClientContract(_instanceContext, new NetNamedPipeBinding(), _endpointAddress);
+                _clientContract =
+                    new DuplexClientContract(_instanceContext, new NetNamedPipeBinding(), _endpointAddress);
             }
             catch (Exception)
             {
@@ -159,14 +169,5 @@ namespace Dreamland.IPC.WCF.Duplex.Pipe
         }
 
         #endregion
-
-        /// <summary>
-        /// 注销资源
-        /// </summary>
-        public void Dispose()
-        {
-            _clientContract.Abort();
-            ((IDisposable) _clientContract)?.Dispose();
-        }
     }
 }

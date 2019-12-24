@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Text;
 using Newtonsoft.Json;
 
 namespace Dreamland.IPC.WCF.Message
@@ -45,7 +46,9 @@ namespace Dreamland.IPC.WCF.Message
             {
                 var properties = obj.GetType().GetProperties();
                 foreach (var propertyInfo in properties.Where(prop => p.Name == prop.Name))
+                {
                     p.SetValue(this, propertyInfo.GetValue(obj, null), null);
+                }
             });
         }
 
@@ -55,7 +58,7 @@ namespace Dreamland.IPC.WCF.Message
         /// <param name="data"></param>
         public void FromBinary(byte[] data)
         {
-            var str = System.Text.Encoding.Default.GetString(data);
+            var str = Encoding.Default.GetString(data);
             FromString(str);
         }
 
@@ -65,7 +68,7 @@ namespace Dreamland.IPC.WCF.Message
         /// <returns></returns>
         public byte[] ToBinary()
         {
-           return System.Text.Encoding.Default.GetBytes(ToString());
+            return Encoding.Default.GetBytes(ToString());
         }
 
         /// <summary>

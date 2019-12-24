@@ -4,9 +4,10 @@ using System.Threading.Tasks;
 using Dreamland.IPC.WCF.Message;
 
 namespace Dreamland.IPC.WCF.Extensions
-{/// <summary>
- /// 消息处理器工厂
- /// </summary>
+{
+    /// <summary>
+    /// 消息处理器工厂
+    /// </summary>
     public static class MessageHandlerFactory
     {
         /// <summary>
@@ -68,12 +69,13 @@ namespace Dreamland.IPC.WCF.Extensions
 
         private static ResponseMessage RequestFunc(object instance, MethodInfo methodInfo, RequestMessage arg)
         {
-            return (ResponseMessage)methodInfo.Invoke(instance, new object[] { arg });
+            return (ResponseMessage) methodInfo.Invoke(instance, new object[] { arg });
         }
 
-        private static Task<ResponseMessage> RequestAsyncFunc(object instance, MethodInfo methodInfo, RequestMessage arg)
+        private static Task<ResponseMessage> RequestAsyncFunc(object instance, MethodInfo methodInfo,
+            RequestMessage arg)
         {
-            return (Task<ResponseMessage>)methodInfo.Invoke(instance, new object[] { arg });
+            return (Task<ResponseMessage>) methodInfo.Invoke(instance, new object[] { arg });
         }
     }
 }

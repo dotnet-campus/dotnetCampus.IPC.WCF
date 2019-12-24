@@ -11,7 +11,9 @@ namespace Dreamland.IPC.WCF
         /// <summary>
         /// 构造
         /// </summary>
-        public LogAttribute() { }
+        public LogAttribute()
+        {
+        }
 
         /// <summary>
         /// 构造

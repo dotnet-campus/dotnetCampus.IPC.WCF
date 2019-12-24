@@ -11,8 +11,6 @@ namespace Dreamland.IPC.WCF.Duplex
     /// </summary>
     internal class DuplexServerContract : IDuplexContract
     {
-        private ServiceHostBase ServiceHost => OperationContext.Current.Host;
-
         /// <summary>
         /// 同步请求处理
         /// </summary>
@@ -24,7 +22,8 @@ namespace Dreamland.IPC.WCF.Duplex
             {
                 if (string.IsNullOrWhiteSpace(message.Id))
                 {
-                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.MessageIdNullOrWhiteSpace);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message,
+                        ErrorCodes.MessageIdNullOrWhiteSpace);
                 }
 
                 //获取服务对应的消息处理器服务
@@ -37,7 +36,8 @@ namespace Dreamland.IPC.WCF.Duplex
                         return requestFunc.Invoke(message);
                     }
 
-                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetRequestMessageListenerFailed);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message,
+                        ErrorCodes.GetRequestMessageListenerFailed);
                 }
 
                 return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetMessageHandlerFailed);
@@ -59,7 +59,8 @@ namespace Dreamland.IPC.WCF.Duplex
             {
                 if (string.IsNullOrWhiteSpace(message.Id))
                 {
-                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.MessageIdNullOrWhiteSpace);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message,
+                        ErrorCodes.MessageIdNullOrWhiteSpace);
                 }
 
                 //获取服务对应的消息处理器服务
@@ -72,7 +73,8 @@ namespace Dreamland.IPC.WCF.Duplex
                         return await requestAsyncFunc.Invoke(message);
                     }
 
-                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetRequestMessageListenerFailed);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message,
+                        ErrorCodes.GetRequestMessageListenerFailed);
                 }
 
                 return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetMessageHandlerFailed);
@@ -107,6 +109,8 @@ namespace Dreamland.IPC.WCF.Duplex
                 // 忽略
             }
         }
+
+        private ServiceHostBase ServiceHost => OperationContext.Current.Host;
     }
 
     /// <summary>
@@ -117,7 +121,6 @@ namespace Dreamland.IPC.WCF.Duplex
         public DuplexClientContract(InstanceContext callbackInstance, Binding binding,
             EndpointAddress serverAddress) : base(callbackInstance, binding, serverAddress)
         {
-
         }
 
         public ResponseMessage Request(RequestMessage message)
@@ -170,7 +173,8 @@ namespace Dreamland.IPC.WCF.Duplex
             {
                 if (string.IsNullOrWhiteSpace(message.Id))
                 {
-                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.MessageIdNullOrWhiteSpace);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message,
+                        ErrorCodes.MessageIdNullOrWhiteSpace);
                 }
 
                 //获取服务对应的消息处理器服务
@@ -183,7 +187,8 @@ namespace Dreamland.IPC.WCF.Duplex
                         return requestFunc.Invoke(message);
                     }
 
-                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetRequestMessageListenerFailed);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message,
+                        ErrorCodes.GetRequestMessageListenerFailed);
                 }
 
                 return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetMessageHandlerFailed);
@@ -205,7 +210,8 @@ namespace Dreamland.IPC.WCF.Duplex
             {
                 if (string.IsNullOrWhiteSpace(message.Id))
                 {
-                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.MessageIdNullOrWhiteSpace);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message,
+                        ErrorCodes.MessageIdNullOrWhiteSpace);
                 }
 
                 //获取服务对应的消息处理器服务
@@ -218,7 +224,8 @@ namespace Dreamland.IPC.WCF.Duplex
                         return await requestAsyncFunc.Invoke(message);
                     }
 
-                    return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetRequestMessageListenerFailed);
+                    return ResponseMessage.GetResponseMessageFromErrorCode(message,
+                        ErrorCodes.GetRequestMessageListenerFailed);
                 }
 
                 return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.GetMessageHandlerFailed);

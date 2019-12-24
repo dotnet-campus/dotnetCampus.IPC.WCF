@@ -9,9 +9,11 @@ namespace Dreamland.IPC.WCF.Duplex
     /// </summary>
     internal static class DuplexServicePool
     {
-        private static readonly ConcurrentDictionary<ServiceHostBase, IMessageHandler> ServerServices = new ConcurrentDictionary<ServiceHostBase, IMessageHandler>();
+        private static readonly ConcurrentDictionary<ServiceHostBase, IMessageHandler> ServerServices =
+            new ConcurrentDictionary<ServiceHostBase, IMessageHandler>();
 
-        private static readonly ConcurrentDictionary<IDuplexCallbackContract, IMessageHandler> ClientServices = new ConcurrentDictionary<IDuplexCallbackContract, IMessageHandler>();
+        private static readonly ConcurrentDictionary<IDuplexCallbackContract, IMessageHandler> ClientServices =
+            new ConcurrentDictionary<IDuplexCallbackContract, IMessageHandler>();
 
         /// <summary>
         /// 添加或更新服务
@@ -28,7 +30,8 @@ namespace Dreamland.IPC.WCF.Duplex
         /// </summary>
         /// <param name="clientContract"></param>
         /// <param name="messageHandler"></param>
-        public static void AddOrUpdateServiceHost(IDuplexCallbackContract clientContract, IMessageHandler messageHandler)
+        public static void AddOrUpdateServiceHost(IDuplexCallbackContract clientContract,
+            IMessageHandler messageHandler)
         {
             ClientServices.AddOrUpdate(clientContract, messageHandler, (host, handler) => messageHandler);
         }
@@ -50,7 +53,8 @@ namespace Dreamland.IPC.WCF.Duplex
         /// <param name="clientContract"></param>
         /// <param name="messageHandler"></param>
         /// <returns></returns>
-        public static bool TryGetMessageHandler(IDuplexCallbackContract clientContract, out IMessageHandler messageHandler)
+        public static bool TryGetMessageHandler(IDuplexCallbackContract clientContract,
+            out IMessageHandler messageHandler)
         {
             return ClientServices.TryGetValue(clientContract, out messageHandler);
         }

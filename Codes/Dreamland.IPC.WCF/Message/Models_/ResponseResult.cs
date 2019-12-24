@@ -11,7 +11,9 @@ namespace Dreamland.IPC.WCF.Message
         /// <summary>
         /// 默认构造
         /// </summary>
-        public ResponseResult() : this(string.Empty) { }
+        public ResponseResult() : this(string.Empty)
+        {
+        }
 
         /// <summary>
         /// 构造

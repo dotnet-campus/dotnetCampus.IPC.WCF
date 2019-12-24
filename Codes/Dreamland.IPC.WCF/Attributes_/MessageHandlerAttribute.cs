@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dreamland.IPC.WCF
 {
@@ -34,16 +30,6 @@ namespace Dreamland.IPC.WCF
     public class MessageHandlerAttribute : Attribute
     {
         /// <summary>
-        /// 消息Id
-        /// </summary>
-        public string MessageId { get; }
-
-        /// <summary>
-        /// 消息类型
-        /// </summary>
-        public MessageHandlerType Type { get; }
-
-        /// <summary>
         /// 构造
         /// </summary>
         /// <param name="messageId"></param>
@@ -53,5 +39,15 @@ namespace Dreamland.IPC.WCF
             MessageId = messageId;
             Type = type;
         }
+
+        /// <summary>
+        /// 消息Id
+        /// </summary>
+        public string MessageId { get; }
+
+        /// <summary>
+        /// 消息类型
+        /// </summary>
+        public MessageHandlerType Type { get; }
     }
 }
