@@ -1,0 +1,23 @@
+﻿<UserControl x:Class="dotnetCampus.IPC.WCF.TestBase.Controls.SentRequestMessageRecordControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="TheSentRequestMessageRecordControl">
+
+    <DataGrid AutoGenerateColumns="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+              VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+              ItemsSource="{Binding ElementName=TheSentRequestMessageRecordControl,Path=SentRequestMessageRecords}">
+        <DataGrid.Columns>
+            <DataGridTextColumn Header="消息Id" Binding="{Binding Id}"/>
+            <DataGridTextColumn Header="序列号" Binding="{Binding Sequence}"/>
+            <DataGridTextColumn Header="发送状态" Binding="{Binding Status}"/>
+            <DataGridTextColumn Header="会话Id" Binding="{Binding SessionId}"/>
+            <DataGridTextColumn Header="消息目标	" Binding="{Binding Destination}"/>
+            <DataGridTextColumn Header="消息来源" Binding="{Binding Source}"/>
+            <DataGridTextColumn Header="请求数据" Binding="{Binding RequestData}" MaxWidth="400"/>
+            <DataGridTextColumn Header="响应数据" Binding="{Binding ResponseData}" MaxWidth="400"/>
+            <DataGridCheckBoxColumn Header="Success" Binding="{Binding Success}" IsReadOnly="True"/>
+            <DataGridTextColumn Header="ErrorCode" Binding="{Binding ErrorCode}"/>
+            <DataGridTextColumn Header="ErrorMessage" Binding="{Binding Message}"/>
+        </DataGrid.Columns>
+    </DataGrid>
+</UserControl>
