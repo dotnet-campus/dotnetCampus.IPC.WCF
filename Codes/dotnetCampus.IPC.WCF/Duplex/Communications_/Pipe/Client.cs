@@ -29,6 +29,15 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         }
 
         /// <summary>
+        /// 构造
+        /// </summary>
+        /// <param name="address"></param>
+        public Client(Uri address) : this(address, Guid.NewGuid().ToString())
+        {
+
+        }
+
+        /// <summary>
         /// 客户端Id
         /// </summary>
         public string ClientId { get; }
