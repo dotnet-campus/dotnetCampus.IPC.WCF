@@ -34,7 +34,10 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
             _service.AddServiceEndpoint(typeof(IDuplexContract), new NetNamedPipeBinding(), address);
 
             //监听客户端初始化事件
-            ServerMessageHandler.TryAddMessageListener("@@Inner_Binding_Server_From_Modification", ClientBindingServer);
+            ServerMessageHandler.TryAddMessageListener(InnerMessageIds.CheckHasBoundServer, HasClientBoundServer);
+            ServerMessageHandler.TryAddMessageListener(InnerMessageIds.CheckHasBoundServer, HasClientBoundServerAsync);
+            ServerMessageHandler.TryAddMessageListener(InnerMessageIds.BindingServer, ClientBindingServer);
+            ServerMessageHandler.TryAddMessageListener(InnerMessageIds.BindingServer, ClientBindingServerAsync);
             //在服务池中：注册此服务对应的消息处理
             DuplexServicePool.AddOrUpdateServiceHost(_service, ServerMessageHandler);
         }
@@ -89,12 +92,37 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
 
         private readonly ServiceHost _service;
 
+        #region 连接服务
+
+        private ResponseMessage HasClientBoundServer(RequestMessage message)
+        {
+            return new ResponseMessage(message)
+            {
+                Result = new ResponseResult()
+                {
+                    Success = _callbackContracts.ContainsKey(message.Source)
+                }
+            };
+        }
+
+        private Task<ResponseMessage> HasClientBoundServerAsync(RequestMessage message)
+        {
+            return Task.Run(() => HasClientBoundServer(message));
+        }
+
         private ResponseMessage ClientBindingServer(RequestMessage message)
         {
             var channel = OperationContext.Current.GetCallbackChannel<IDuplexCallbackContract>();
-            _callbackContracts.AddOrUpdate(message.Data, channel, (s, contract) => channel);
+            _callbackContracts.AddOrUpdate(message.Source, channel, (s, contract) => channel);
             return ResponseMessage.SuccessfulResponseMessage(message);
         }
+
+        private Task<ResponseMessage> ClientBindingServerAsync(RequestMessage message)
+        {
+            return Task.Run(() => ClientBindingServer(message));
+        }
+
+        #endregion
 
         #region 调用客户端方法
 

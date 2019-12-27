@@ -60,9 +60,30 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         public CommunicationState State => _clientContract.State;
 
         /// <summary>
-        /// 是否已经绑定至Server
+        /// 检测是否已绑定服务器
         /// </summary>
-        public bool HasBindingServer { get; private set; }
+        /// <returns></returns>
+        public bool HasBoundServer()
+        {
+            return Request(new RequestMessage
+            {
+                Id = InnerMessageIds.CheckHasBoundServer,
+                Source = ClientId,
+            }).Result.Success;
+        }
+
+        /// <summary>
+        /// 检测是否已绑定服务器（异步）
+        /// </summary>
+        /// <returns></returns>
+        public async Task<bool> IsBoundServerAsync()
+        {
+            return (await RequestAsync(new RequestMessage
+            {
+                Id = InnerMessageIds.CheckHasBoundServer,
+                Source = ClientId,
+            })).Result.Success;
+        }
 
         /// <summary>
         /// 绑定服务端
@@ -70,22 +91,24 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         /// </summary>
         public ResponseResult BindingServer()
         {
-            if (HasBindingServer)
+            return Request(new RequestMessage
             {
-                return new ResponseResult
-                {
-                    Success = true
-                };
-            }
+                Id = InnerMessageIds.BindingServer,
+                Source = ClientId,
+            }).Result;
+        }
 
-            var response = Request(new RequestMessage
+        /// <summary>
+        /// 绑定服务端（异步）
+        /// 绑定服务端成功即可与服务端进行双工通信
+        /// </summary>
+        public async Task<ResponseResult> BindingServerAsync()
+        {
+            return (await RequestAsync(new RequestMessage
             {
-                Id = "@@Inner_Binding_Server_From_Modification",
-                Data = ClientId
-            });
-
-            HasBindingServer = response.Result?.Success ?? false;
-            return response.Result;
+                Id = InnerMessageIds.BindingServer,
+                Source = ClientId,
+            })).Result;
         }
 
         /// <summary>
