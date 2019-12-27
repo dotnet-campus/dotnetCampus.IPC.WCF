@@ -25,6 +25,12 @@ namespace dotnetCampus.IPC.WCF.Message
         }
 
         /// <summary>
+        /// 是否是广播
+        /// </summary>
+        [JsonProperty("isBroadcast")]
+        public bool IsBroadcast { get; set; }
+
+        /// <summary>
         /// 消息内容(jsonObject序列化后的数据)
         /// </summary>
         [JsonProperty("data")]

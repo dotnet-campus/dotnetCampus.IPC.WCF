@@ -143,31 +143,54 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         }
 
         /// <summary>
-        /// 向客户端发送通知，必须在<see cref="RequestMessage"/>的"Destination"属性中指定要发送的客户端目标，否则发送广播
+        /// 向客户端发送通知，在<see cref="RequestMessage"/>的"IsBroadcast"属性为True则忽略"Destination"发送广播，否则则定向发送至"Destination"对应的端
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        [OperationContract(IsOneWay = true)]
-        public void Notify(NotifyMessage message)
+        public NotifyResult Notify(NotifyMessage message)
         {
-            try
+            var notifyResult = new NotifyResult()
             {
-                if (_callbackContracts.TryGetValue(message.Destination, out var callbackContract))
+                ExceptionInfos = new Dictionary<string, string>(),
+                SentTerminals = new List<string>()
+            };
+
+            if (message.IsBroadcast)
+            {
+                foreach (var duplexCallbackContract in _callbackContracts)
                 {
-                    callbackContract.CallbackNotify(message);
-                }
-                else
-                {
-                    foreach (var duplexCallbackContract in _callbackContracts)
+                    try
                     {
                         duplexCallbackContract.Value.CallbackNotify(message);
+                        notifyResult.SentTerminals.Add(duplexCallbackContract.Key);
+                    }
+                    catch (Exception ex)
+                    {
+                        notifyResult.ExceptionInfos.Add(duplexCallbackContract.Key, ex.Message);
                     }
                 }
             }
-            catch (Exception)
+            else if(message.Destination != null)
             {
-                // ignored
+                if (_callbackContracts.TryGetValue(message.Destination, out var callbackContract))
+                {
+                    try
+                    {
+                        callbackContract.CallbackNotify(message);
+                    }
+                    catch (Exception ex)
+                    {
+                        notifyResult.ExceptionInfos.Add(message.Destination, ex.Message);
+                    }
+                }
+                else
+                {
+                    notifyResult.ExceptionInfos.Add(message.Destination, ErrorCodes.FindClientFailed.GetCustomAttribute<LogAttribute>()
+                        ?.Description);
+                }
             }
+
+            return notifyResult;
         }
 
         #endregion
