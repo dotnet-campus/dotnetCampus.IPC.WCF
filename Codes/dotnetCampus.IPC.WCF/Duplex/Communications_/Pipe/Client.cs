@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ServiceModel;
 using System.Threading.Tasks;
+using System.Timers;
+using dotnetCampus.IPC.WCF.Extensions;
 using dotnetCampus.IPC.WCF.Message;
 
 namespace dotnetCampus.IPC.WCF.Duplex.Pipe
@@ -26,6 +28,8 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
 
             //在服务池中：注册此客户端对应的消息处理
             DuplexServicePool.AddOrUpdateServiceHost(callbackContract, ClientMessageHandler);
+
+            _checkBindingTimer.Elapsed += CheckBindingTimerOnElapsed;
         }
 
         /// <summary>
@@ -64,6 +68,11 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         #region 连接服务
 
         /// <summary>
+        /// 绑定中断
+        /// </summary>
+        public event EventHandler<BoundBreakEventArgs> BoundBreak;
+
+        /// <summary>
         /// 当前的连接状态
         /// </summary>
         public CommunicationState State => _clientContract.State;
@@ -72,26 +81,18 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         /// 检测是否已绑定服务器
         /// </summary>
         /// <returns></returns>
-        public bool HasBoundServer()
+        public bool IsServerBindingOpen()
         {
-            return Request(new RequestMessage
-            {
-                Id = InnerMessageIds.CheckHasBoundServer,
-                Source = ClientId,
-            }).Result.Success;
+            return CheckServerBinding().Success;
         }
 
         /// <summary>
         /// 检测是否已绑定服务器（异步）
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> IsBoundServerAsync()
+        public Task<bool> IsServerBindingOpenAsync()
         {
-            return (await RequestAsync(new RequestMessage
-            {
-                Id = InnerMessageIds.CheckHasBoundServer,
-                Source = ClientId,
-            })).Result.Success;
+            return Task.Run(IsServerBindingOpen);
         }
 
         /// <summary>
@@ -100,24 +101,27 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         /// </summary>
         public ResponseResult BindingServer()
         {
-            return Request(new RequestMessage
+            var result = Request(new RequestMessage
             {
                 Id = InnerMessageIds.BindingServer,
                 Source = ClientId,
             }).Result;
+
+            if (result.Success)
+            {
+                _checkBindingTimer.Enabled = true;
+            }
+
+            return result;
         }
 
         /// <summary>
         /// 绑定服务端（异步）
         /// 绑定服务端成功即可与服务端进行双工通信
         /// </summary>
-        public async Task<ResponseResult> BindingServerAsync()
+        public Task<ResponseResult> BindingServerAsync()
         {
-            return (await RequestAsync(new RequestMessage
-            {
-                Id = InnerMessageIds.BindingServer,
-                Source = ClientId,
-            })).Result;
+            return Task.Run(BindingServer);
         }
 
         /// <summary>
@@ -161,6 +165,40 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
                 // ignored
             }
         }
+
+        /// <summary>
+        /// 检测客户端绑定服务端状态
+        /// </summary>
+        /// <returns></returns>
+        private ResponseResult CheckServerBinding()
+        {
+            return Request(new RequestMessage
+            {
+                Id = InnerMessageIds.CheckServerBinding,
+                Source = ClientId,
+            }).Result;
+        }
+
+        private readonly object _locker = new object();
+
+        private void CheckBindingTimerOnElapsed(object sender, ElapsedEventArgs e)
+        {
+            lock (_locker)
+            {
+                var request = CheckServerBinding();
+
+                if (!request.Success && _checkBindingTimer.Enabled)
+                {
+                    BoundBreak?.Invoke(this, new BoundBreakEventArgs(request.Message));
+                    _checkBindingTimer.Enabled = false;
+                }
+            }
+        }
+
+        private readonly Timer _checkBindingTimer = new Timer(1000)
+        {
+            AutoReset = true
+        };
 
         #endregion
 

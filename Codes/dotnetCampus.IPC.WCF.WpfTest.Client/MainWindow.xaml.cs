@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using System.Windows;
+using dotnetCampus.IPC.WCF.Extensions;
 using dotnetCampus.IPC.WCF.Message;
 using dotnetCampus.IPC.WCF.TestBase;
 
@@ -25,6 +25,7 @@ namespace dotnetCampus.IPC.WCF.WpfTest.Client
             Title = $"客户端:{_clientId}";
 
             _client = new Duplex.Pipe.Client(new Uri(TestCustomText.Address), _clientId);
+            _client.BoundBreak += ClientOnBoundBreak;
 
             _client.ClientMessageHandler.TryAddMessageListener(TestCustomText.SendToClientMessage, ListenServerSentMessageRequest);
 
@@ -59,6 +60,11 @@ namespace dotnetCampus.IPC.WCF.WpfTest.Client
             RecordControl.AddOrUpdate(requestMessage);
             var response = await _client.RequestAsync(requestMessage);
             RecordControl.AddOrUpdate(response);
+        }
+
+        private void ClientOnBoundBreak(object sender, BoundBreakEventArgs e)
+        {
+            MessageBox.Show("已和服务端断开绑定！", "异常");
         }
     }
 }

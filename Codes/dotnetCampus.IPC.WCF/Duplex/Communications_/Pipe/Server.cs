@@ -34,8 +34,8 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
             _service.AddServiceEndpoint(typeof(IDuplexContract), new NetNamedPipeBinding(), address);
 
             //监听客户端初始化事件
-            ServerMessageHandler.TryAddMessageListener(InnerMessageIds.CheckHasBoundServer, HasClientBoundServer);
-            ServerMessageHandler.TryAddMessageListener(InnerMessageIds.CheckHasBoundServer, HasClientBoundServerAsync);
+            ServerMessageHandler.TryAddMessageListener(InnerMessageIds.CheckServerBinding, HasClientBoundServer);
+            ServerMessageHandler.TryAddMessageListener(InnerMessageIds.CheckServerBinding, HasClientBoundServerAsync);
             ServerMessageHandler.TryAddMessageListener(InnerMessageIds.BindingServer, ClientBindingServer);
             ServerMessageHandler.TryAddMessageListener(InnerMessageIds.BindingServer, ClientBindingServerAsync);
             //在服务池中：注册此服务对应的消息处理
