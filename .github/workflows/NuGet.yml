@@ -30,5 +30,5 @@ jobs:
         .\nuget sources add -name github -Source https://nuget.pkg.github.com/dotnet-campus/index.json -Username dotnet-campus -Password ${{ secrets.GITHUB_TOKEN }}
     - name: Push generated package to GitHub registry
       run: |
-        .\nuget push .\Code\bin\release\*.nupkg -Source github -SkipDuplicate
-        .\nuget push .\Code\bin\release\*.nupkg -Source https://api.nuget.org/v3/index.json -SkipDuplicate -ApiKey ${{ secrets.NugetKey }} -NoSymbols 
+        .\nuget push .\Codes\bin\release\*.nupkg -Source github -SkipDuplicate
+        .\nuget push .\Codes\bin\release\*.nupkg -Source https://api.nuget.org/v3/index.json -SkipDuplicate -ApiKey ${{ secrets.NugetKey }} -NoSymbols 
