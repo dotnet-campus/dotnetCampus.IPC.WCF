@@ -13,6 +13,7 @@ namespace dotnetCampus.IPC.WCF.Build
 
         public override void Compile()
         {
+            Nuget.Restore();
             MsBuild.Build();
         }
     }
