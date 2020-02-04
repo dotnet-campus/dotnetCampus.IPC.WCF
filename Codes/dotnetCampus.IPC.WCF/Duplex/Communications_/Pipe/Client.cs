@@ -109,7 +109,10 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
 
             if (result.Success)
             {
-                _checkBindingTimer.Enabled = true;
+                lock (_locker)
+                {
+                    _checkBindingTimer.Enabled = true;
+                }
             }
 
             return result;
