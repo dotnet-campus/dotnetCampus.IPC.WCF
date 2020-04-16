@@ -45,6 +45,12 @@
         FindClientFailed = 10102,
 
         /// <summary>
+        /// 客户端与服务端发送消息失败，无法连接到服务端
+        /// </summary>
+        [Log("客户端与服务端发送消息失败，无法连接到服务端")]
+        FindServerFailed = 10103,
+
+        /// <summary>
         /// 客户端连接未初始化
         /// </summary>
         [Log("客户端连接未初始化")] ClientUninitialized = 10200

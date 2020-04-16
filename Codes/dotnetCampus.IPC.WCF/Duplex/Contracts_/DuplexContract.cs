@@ -7,8 +7,9 @@ using dotnetCampus.IPC.WCF.Message;
 namespace dotnetCampus.IPC.WCF.Duplex
 {
     /// <summary>
-    /// 服务端协议
+    /// [服务端 实现]服务端协议
     /// </summary>
+    [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple)]
     internal class DuplexServerContract : IDuplexContract
     {
         /// <summary>
@@ -106,7 +107,7 @@ namespace dotnetCampus.IPC.WCF.Duplex
             }
             catch (Exception)
             {
-                // 忽略
+                //服务端此处必须忽略异常，否则会导致通信断开
             }
         }
 
@@ -114,7 +115,7 @@ namespace dotnetCampus.IPC.WCF.Duplex
     }
 
     /// <summary>
-    /// 客户端协议
+    /// [客户端 实现]客户端协议
     /// </summary>
     internal class DuplexClientContract : DuplexClientBase<IDuplexContract>, IDuplexContract
     {
@@ -149,17 +150,14 @@ namespace dotnetCampus.IPC.WCF.Duplex
 
         public void Notify(NotifyMessage message)
         {
-            try
-            {
-                Channel.Notify(message);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
+            Channel.Notify(message);
         }
     }
 
+    /// <summary>
+    /// [客户端 实现]客户端回调协议
+    /// </summary>
+    [CallbackBehavior(ConcurrencyMode = ConcurrencyMode.Multiple)]
     internal class DuplexCallbackContract : IDuplexCallbackContract
     {
         /// <summary>
@@ -258,7 +256,7 @@ namespace dotnetCampus.IPC.WCF.Duplex
             }
             catch (Exception)
             {
-                // ignored
+                //客户端此处必须忽略异常，否则会导致通信断开
             }
         }
     }

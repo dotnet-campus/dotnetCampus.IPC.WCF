@@ -133,6 +133,9 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         /// <returns></returns>
         public ResponseMessage Request(RequestMessage message)
         {
+            //设置消息源
+            message.Source = ServerId;
+
             try
             {
                 if (!_callbackContracts.TryGetValue(message.Destination, out var callbackContract))
@@ -155,6 +158,9 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         /// <returns></returns>
         public async Task<ResponseMessage> RequestAsync(RequestMessage message)
         {
+            //设置消息源
+            message.Source = ServerId;
+
             try
             {
                 if (!_callbackContracts.TryGetValue(message.Destination, out var callbackContract))
@@ -177,6 +183,9 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         /// <returns></returns>
         public NotifyResult Notify(NotifyMessage message)
         {
+            //设置消息源
+            message.Source = ServerId;
+
             var notifyResult = new NotifyResult()
             {
                 ExceptionInfos = new Dictionary<string, string>(),

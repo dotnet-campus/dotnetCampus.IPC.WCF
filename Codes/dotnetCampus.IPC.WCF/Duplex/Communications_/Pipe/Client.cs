@@ -64,6 +64,7 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         private readonly EndpointAddress _endpointAddress;
         private readonly InstanceContext _instanceContext;
         private DuplexClientContract _clientContract;
+        private bool _isNeedBindingServer;
 
         #region 连接服务
 
@@ -76,6 +77,13 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         /// 当前的连接状态
         /// </summary>
         public CommunicationState State => _clientContract.State;
+
+        /// <summary>
+        /// 是否连接异常
+        /// </summary>
+        public bool IsCommunicationStateAbnormal => State == CommunicationState.Closed ||
+                                                    State == CommunicationState.Closing ||
+                                                    State == CommunicationState.Faulted;
 
         /// <summary>
         /// 检测是否已绑定服务器
@@ -101,7 +109,9 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         /// </summary>
         public ResponseResult BindingServer()
         {
-            var result = Request(new RequestMessage
+            _isNeedBindingServer = true;
+
+            var result = InnerRequest(new RequestMessage
             {
                 Id = InnerMessageIds.BindingServer,
                 Source = ClientId,
@@ -131,42 +141,37 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         /// 重连服务
         /// </summary>
         /// <returns></returns>
-        public CommunicationState ReconnectServer()
-        {
-            try
-            {
-                _clientContract.Abort();
-                _clientContract =
-                    new DuplexClientContract(_instanceContext, new NetNamedPipeBinding(), _endpointAddress);
-            }
-            catch (Exception)
-            {
-                return CommunicationState.Faulted;
-            }
-
-            return _clientContract.State;
-        }
-
-        /// <summary>
-        /// 尝试修复连接
-        /// </summary>
-        private void TryRepairConnection()
+        public bool TryReconnectServer()
         {
             try
             {
                 switch (_clientContract.State)
                 {
+                    case CommunicationState.Faulted:
                     case CommunicationState.Closed:
                     case CommunicationState.Closing:
-                    case CommunicationState.Faulted:
-                        ReconnectServer();
+                        _clientContract = new DuplexClientContract(_instanceContext, new NetNamedPipeBinding(), _endpointAddress);
+                        break;
+                    default:
+                        _clientContract.Open();
                         break;
                 }
             }
             catch (Exception)
             {
-                // ignored
+                return false;
             }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 重连服务
+        /// </summary>
+        /// <returns></returns>
+        public Task<bool> ReconnectServerAsync()
+        {
+            return Task.Run(TryReconnectServer);
         }
 
         /// <summary>
@@ -175,7 +180,7 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         /// <returns></returns>
         private ResponseResult CheckServerBinding()
         {
-            return Request(new RequestMessage
+            return InnerRequest(new RequestMessage
             {
                 Id = InnerMessageIds.CheckServerBinding,
                 Source = ClientId,
@@ -203,6 +208,21 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
             AutoReset = true
         };
 
+        private bool InnerRepairConnection()
+        {
+            if (!IsCommunicationStateAbnormal)
+            {
+                return true;
+            }
+
+            if (!TryReconnectServer())
+            {
+                return false;
+            }
+
+            return !_isNeedBindingServer || BindingServer().Success;
+        }
+
         #endregion
 
         #region 调用服务端方法
@@ -212,10 +232,24 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
+        private ResponseMessage InnerRequest(RequestMessage message)
+        {
+            //设置消息源
+            message.Source = ClientId;
+
+            return _clientContract.Request(message);
+        }
+
+        /// <summary>
+        /// 向服务端发送请求
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public ResponseMessage Request(RequestMessage message)
         {
-            TryRepairConnection();
-            return _clientContract.Request(message);
+            return InnerRepairConnection()
+                ? InnerRequest(message)
+                : ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.FindServerFailed);
         }
 
         /// <summary>
@@ -225,7 +259,13 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         /// <returns></returns>
         public async Task<ResponseMessage> RequestAsync(RequestMessage message)
         {
-            TryRepairConnection();
+            //设置消息源
+            message.Source = ClientId;
+
+            if (!InnerRepairConnection())
+            {
+                return ResponseMessage.GetResponseMessageFromErrorCode(message, ErrorCodes.FindServerFailed);
+            }
             return await _clientContract.RequestAsync(message).ConfigureAwait(false);
         }
 
@@ -233,12 +273,30 @@ namespace dotnetCampus.IPC.WCF.Duplex.Pipe
         /// 向服务端发送通知
         /// </summary>
         /// <param name="message"></param>
+        /// <param name="errorMessage"></param>
         /// <returns></returns>
-        [OperationContract(IsOneWay = true)]
-        public void Notify(NotifyMessage message)
+        public bool Notify(NotifyMessage message, out string errorMessage)
         {
-            TryRepairConnection();
-            _clientContract.Notify(message);
+            //设置消息源
+            message.Source = ClientId;
+
+            if (!InnerRepairConnection())
+            {
+                errorMessage = ErrorCodes.FindServerFailed.GetCustomAttribute<LogAttribute>()
+                    ?.Description;
+                return false;
+            }
+            try
+            {
+                errorMessage = "success";
+                _clientContract.Notify(message);
+                return true;
+            }
+            catch (Exception e)
+            {
+                errorMessage = e.Message;
+                return false;
+            }
         }
 
         #endregion
